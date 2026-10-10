@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResQMap AI | Disaster Intelligence</title>
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">R</div>
+            <div>
+                <h1>ResQMap <span>AI</span></h1>
+                <p>DISASTER INTELLIGENCE</p>
+            </div>
+        </div>
+
+        <div class="nav-label">WORKSPACE</div>
+        <a class="nav-link active" href="#overview"><span>▦</span> Overview</a>
+        <a class="nav-link" href="#map-section"><span>⌖</span> Incident Map</a>
+        <a class="nav-link" href="#incident-section"><span>▤</span> Inspection Queue</a>
+        <a class="nav-link" href="/report">
+            <span>＋</span> Report Incident
+        </a>
+        <div class="sidebar-note">
+            <div class="status-dot"></div>
+            <div><strong>Prototype mode</strong><small>Sample incident data</small></div>
+        </div>
+        <p class="sidebar-footer">PS-53 · Hackathon Prototype</p>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">DISASTER RESPONSE WORKSPACE</p>
+                <h2>Situation Overview</h2>
+                <p class="subheading">Turn available evidence into an inspection-priority plan.</p>
+            </div>
+            <div class="topbar-right">
+                <span class="live-pill"><span></span> SYSTEM ONLINE</span>
+                <div class="avatar">RA</div>
+            </div>
+        </header>
+
+        <section id="overview" class="stat-grid">
+            <article class="stat-card">
+                <div class="stat-top"><span>Sites assessed</span><span class="stat-icon blue">⌖</span></div>
+                <strong id="total-sites">—</strong>
+                <p>Sample incident records</p>
+            </article>
+            <article class="stat-card">
+                <div class="stat-top"><span>High priority</span><span class="stat-icon red">!</span></div>
+                <strong id="high-priority">—</strong>
+                <p>Require urgent review</p>
+            </article>
+            <article class="stat-card">
+                <div class="stat-top"><span>Pending inspection</span><span class="stat-icon amber">◷</span></div>
+                <strong id="pending-sites">—</strong>
+                <p>Awaiting field verification</p>
+            </article>
+            <article class="stat-card">
+                <div class="stat-top"><span>Field verified</span><span class="stat-icon green">✓</span></div>
+                <strong id="verified-sites">—</strong>
+                <p>Status recorded by a human</p>
+            </article>
+        </section>
+
+        <section class="content-grid">
+            <article class="panel map-panel" id="map-section">
+                <div class="panel-header">
+                    <div>
+                        <h3>Incident map</h3>
+                        <p>Illustrative locations near Vijayawada</p>
+                    </div>
+                    <span class="mini-tag">DEMO DATA</span>
+                </div>
+                <div class="map-legend">
+                    <span><i class="legend-dot high"></i> High</span>
+                    <span><i class="legend-dot medium"></i> Moderate</span>
+                    <span><i class="legend-dot low"></i> Low</span>
+                </div>
+
+                <div class="map-filters" style="
+display:flex;
+gap:10px;
+    flex-wrap:wrap;
+    margin:12px 0;
+">
+    <select id="priority-filter" aria-label="Filter by priority">
+        <option value="ALL">All priorities</option>
+        <option value="IMMEDIATE">Immediate</option>
+        <option value="HIGH">High</option>
+        <option value="MODERATE">Moderate</option>
+        <option value="LOW">Low</option>
+    </select>
+
+    <select id="status-filter" aria-label="Filter by status">
+        <option value="ALL">All statuses</option>
+        <option value="Pending inspection">Pending inspection</option>
+        <option value="Field verified">Field verified</option>
+        <option value="Resolved">Resolved</option>
+    </select>
+
+    <button id="reset-map-filters" type="button">
+        Reset filters
+    </button>
+</div>
+                <div id="map" aria-label="Map showing sample incident locations"></div>
+                <p class="map-disclaimer">Locations are illustrative only. They do not represent verified disaster sites.</p>
+            </article>
+
+            <article class="panel priority-panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Priority summary</h3>
+                        <p>Highest scores first</p>
+                    </div>
+                    <span class="panel-symbol">↗</span>
+                </div>
+                <div id="priority-list" class="priority-list">
+                    <p class="loading">Loading incident records…</p>
+                </div>
+                <div class="method-note">
+                    <strong>How ranking works</strong>
+                    <p>Demo scores are illustrative. Later, we will calculate scores from documented inputs and show uncertainty.</p>
+                </div>
+            </article>
+        </section>
+
+        <section class="panel table-panel" id="incident-section">
+            <div class="panel-header table-heading">
+                <div>
+                    <h3>Inspection queue</h3>
+                    <p>Review the sites that need human attention</p>
+                </div>
+                <button id="download-csv" class="secondary-button" type="button">↓ Export CSV</button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Incident ID</th>
+                            <th>Location</th>
+                            <th>Estimated damage</th>
+                            <th>Priority score</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="incident-table">
+                        <tr><td colspan="5" class="loading">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <footer>
+            <span>ResQMap AI · PS-53</span>
+            <span>Decision support only · Human inspection is required</span>
+        </footer>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Incident | ResQMap AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .report-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 22px;
+            align-items: start;
+        }
+        .report-form {
+            display: grid;
+            gap: 18px;
+            padding: 22px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #344054;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid #d0d5dd;
+            border-radius: 9px;
+            font: inherit;
+            background: #fff;
+            color: #101828;
+        }
+
+        .form-group textarea {
+            min-height: 105px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .submit-report {
+            border: none;
+            border-radius: 9px;
+            padding: 13px 18px;
+            background: #d94841;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .submit-report:hover {
+            background: #b8322b;
+        }
+
+        .info-panel {
+            padding: 22px;
+        }
+
+        .info-panel p,
+        .info-panel li {
+            color: #667085;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .info-panel ul {
+            padding-left: 20px;
+        }
+
+        .notice {
+            padding: 13px;
+            border-radius: 9px;
+            background: #fff4e5;
+            color: #8a4b08;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        #form-message {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 900px) {
+            .report-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 550px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .report-form,
+            .info-panel {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="app-shell">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-mark">R</div>
+            <div>
+                <h2>ResQMap AI</h2>
+                <p>Disaster Response Platform</p>
+            </div>
+        </div>
+
+        <div class="nav-label">WORKSPACE</div>
+
+        <a class="nav-link" href="/">
+            <span>▦</span> Overview
+        </a>
+
+        <a class="nav-link" href="/#map-section">
+            <span>⌖</span> Incident Map
+        </a>
+
+        <a class="nav-link" href="/#incident-section">
+            <span>▤</span> Inspection Queue
+        </a>
+
+        <a class="nav-link active" href="/report">
+            <span>＋</span> Report Incident
+        </a>
+
+        <div class="sidebar-note">
+            <strong>Response matters.</strong>
+            <p>Accurate incident information helps responders assess needs and prioritize assistance.</p>
+        </div>
+
+        <div class="sidebar-footer">
+            <span class="status-dot"></span>
+            ResQMap AI Demo
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">INCIDENT MANAGEMENT</p>
+                <h1>Report an Incident</h1>
+                <p class="subheading">Submit disaster information for response assessment.</p>
+            </div>
+
+            <div class="topbar-right">
+                <div class="live-pill">
+                    <span class="status-dot"></span>
+                    Reporting Portal
+                </div>
+            </div>
+        </header>
+
+        <section class="report-grid">
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Incident Details</h2>
+                        <p>Provide as much accurate information as possible.</p>
+                    </div>
+                </div>
+
+                <form id="incident-form" class="report-form">
+
+                    <div class="form-group">
+                        <label for="disaster_type">Disaster Type *</label>
+                        <select id="disaster_type" name="disaster_type" required>
+                            <option value="">Select disaster type</option>
+                            <option value="Flood">Flood</option>
+                            <option value="Earthquake">Earthquake</option>
+                            <option value="Cyclone">Cyclone</option>
+                            <option value="Fire">Fire</option>
+                            <option value="Landslide">Landslide</option>
+                            <option value="Building Collapse">Building Collapse</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="location">Location / Area *</label>
+                            <input id="location" name="location"
+                                   placeholder="Village, town or landmark" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="people_affected">People Affected *</label>
+                            <input id="people_affected" name="people_affected"
+                                   type="number" min="0" value="1" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="latitude">Latitude (optional)</label>
+                            <input id="latitude" name="latitude" type="number"
+                                   step="any" placeholder="e.g. 16.5">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="longitude">Longitude (optional)</label>
+                            <input id="longitude" name="longitude" type="number"
+                                   step="any" placeholder="e.g. 82.0">
+                        </div>
+                        <div class="form-group">
+    <button type="button" id="get-location"
+            class="submit-report"
+            style="background:#1570ef;">
+        📍 Use My Current Location
+    </button>
+    <p id="location-message" role="status"
+       style="font-size:13px;color:#667085;">
+        Click to fill your GPS coordinates automatically.
+    </p>
+</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="life_safety">Immediate Danger *</label>
+                        <select id="life_safety" name="life_safety" required>
+                            <option value="">Select current situation</option>
+                            <option value="yes">Yes — people trapped, injured, or in immediate danger</option>
+                            <option value="no">No immediate life-threatening danger reported</option>
+                            <option value="unknown">Unknown — situation not confirmed</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="assistance">Assistance Needed *</label>
+                        <select id="assistance" name="assistance" required>
+                            <option value="">Select assistance needed</option>
+                            <option value="Rescue">Rescue team</option>
+                            <option value="Medical">Medical assistance</option>
+                            <option value="Food and Water">Food and drinking water</option>
+                            <option value="Shelter">Temporary shelter</option>
+                            <option value="Evacuation">Evacuation</option>
+                            <option value="Multiple">Multiple types of assistance</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Additional Details *</label>
+                        <textarea id="description" name="description"
+                                  placeholder="Describe visible damage, blocked roads, injuries, or other urgent needs."
+                                  required></textarea>
+                    </div>
+
+                    <div class="notice">
+                        This is a demonstration reporting portal. Do not rely on it for real emergencies.
+                        Contact local emergency services immediately if lives are at risk.
+                    </div>
+
+                    <button class="submit-report" type="submit">
+                        Submit Incident Report
+                    </button>
+
+                    <p id="form-message" role="status"></p>
+                </form>
+            </div>
+
+            <div>
+                <div class="panel info-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Reporting Guidelines</h2>
+                            <p>Help the system assess the incident.</p>
+                        </div>
+                    </div>
+
+                    <ul>
+                        <li>Enter the correct location or a nearby landmark.</li>
+                        <li>Report people trapped or injured honestly.</li>
+                        <li>Estimate the number of people affected if known.</li>
+                        <li>Describe damage and immediate needs clearly.</li>
+                        <li>Leave coordinates blank if you do not know them.</li>
+                    </ul>
+                </div>
+
+                <div class="panel info-panel" style="margin-top: 22px;">
+                    <div class="panel-header">
+                        <div>
+                            <h2>How Prioritization Works</h2>
+                            <p>Decision support, not a final emergency judgment.</p>
+                        </div>
+                    </div>
+
+                    <p><strong>Life safety:</strong> Reports of people trapped or in immediate danger require urgent attention.</p>
+                    <p><strong>Damage:</strong> The reported type and extent of damage contribute to assessment.</p>
+                    <p><strong>People affected:</strong> More affected people can increase the need for assistance.</p>
+                    <p><strong>Uncertainty:</strong> Unverified reports must be checked by responders.</p>
+                </div>
+            </div>
+
+        </section>
+    </main>
+</div>
+
+<script>
+    document.getElementById("get-location").addEventListener("click", function () {
+    const locationMessage = document.getElementById("location-message");
+    const button = this;
+
+    if (!navigator.geolocation) {
+        locationMessage.textContent =
+            "GPS is not supported by this browser. Enter coordinates manually.";
+        return;
+    }
+
+    locationMessage.textContent = "Getting your location...";
+    button.disabled = true;
+
+    navigator.geolocation.getCurrentPosition(
+        function (position) {
+            document.getElementById("latitude").value =
+                position.coords.latitude.toFixed(6);
+
+            document.getElementById("longitude").value =
+                position.coords.longitude.toFixed(6);
+
+            locationMessage.textContent =
+                "Location captured successfully!";
+            button.disabled = false;
+        },
+        function (error) {
+            const messages = {
+                1: "Location permission denied. Allow location access or enter coordinates manually.",
+                2: "Location unavailable. Try again or enter coordinates manually.",
+                3: "Location request timed out. Please try again."
+            };
+
+            locationMessage.textContent =
+                messages[error.code] || "Could not get your location.";
+            button.disabled = false;
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0
+        }
+    );
+});
+document.getElementById("incident-form").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const message = document.getElementById("form-message");
+    const form = event.target;
+    const data = Object.fromEntries(new FormData(form).entries());
+
+    data.people_affected = Number(data.people_affected);
+    data.latitude = data.latitude === "" ? null : Number(data.latitude);
+    data.longitude = data.longitude === "" ? null : Number(data.longitude);
+    data.life_safety = data.life_safety;
+
+    message.textContent = "Submitting report...";
+
+    try {
+        const response = await fetch("/api/incidents", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "Could not submit the report.");
+        }
+
+        message.textContent =
+            `Report submitted. ID: ${result.id || "created"} | Priority: ${result.priority || "Pending assessment"}`;
+
+        form.reset();
+    } catch (error) {
+        message.textContent =
+            error.message === "Failed to fetch"
+            ? "The reporting API is not connected yet. We need to add the backend submission route next."
+            : error.message;
+    }
+});
+</script>
+</body>
+</html>
