@@ -1,4 +1,5 @@
 from flask import Flask, render_template, jsonify, request
+import requests
 import sqlite3
 from pathlib import Path
 app = Flask(__name__)
@@ -445,5 +446,70 @@ def update_incident_status(incident_id):
         "id": incident_id,
         "status": new_status
     }), 200
+
+@app.route("/api/assess-damage", methods=["POST"])
+def assess_damage():
+    photo = request.files.get("photo")
+    latitude = request.form.get("claimed_lat")
+    longitude = request.form.get("claimed_lng")
+    disaster_cutoff = request.form.get("disaster_cutoff")
+    property_type = request.form.get("property_type", "building")
+
+    if not photo or not photo.filename:
+        return jsonify({"error": "Please upload a damage photo."}), 400
+
+    if not latitude or not longitude or not disaster_cutoff:
+        return jsonify({
+            "error": "Photo, GPS coordinates, and disaster date/time are required."
+        }), 400
+
+    try:
+        latitude = float(latitude)
+        longitude = float(longitude)
+
+        if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
+            raise ValueError("Coordinates out of range")
+    except ValueError:
+        return jsonify({"error": "Enter valid GPS coordinates."}), 400
+
+    try:
+        response = requests.post(
+            "https://aapdasetu-damage-api.onrender.com/api/assess-damage",
+            files={
+                "photo": (
+                    photo.filename,
+                    photo.stream,
+                    photo.mimetype or "application/octet-stream"
+                )
+            },
+            data={
+                "claimed_lat": latitude,
+                "claimed_lng": longitude,
+                "property_type": property_type,
+                "disaster_cutoff": disaster_cutoff,
+            },
+            timeout=90,
+        )
+
+        try:
+            result = response.json()
+        except ValueError:
+            result = {"message": response.text[:1000]}
+
+        if not response.ok:
+            return jsonify({
+                "error": "The AI service rejected the assessment.",
+                "details": result,
+            }), 502
+
+        return jsonify({
+            "message": "AI assessment completed.",
+            "assessment": result,
+        }), 200
+
+    except requests.RequestException:
+        return jsonify({
+            "error": "The AI service could not be reached. Please try again."
+        }), 502
 if __name__ == "__main__":
     app.run(debug=True)

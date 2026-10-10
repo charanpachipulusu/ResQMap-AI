@@ -1,33 +1,48 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Incident | ResQMap AI</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
     <style>
-        .report-grid {
-            display: grid;
-            grid-template-columns: 1.5fr 1fr;
-            gap: 22px;
-            align-items: start;
+        .report-page {
+            max-width: 950px;
+            margin: 30px auto;
+            padding: 24px;
         }
+
+        .report-header {
+            margin-bottom: 24px;
+        }
+
+        .report-header h1 {
+            margin-bottom: 8px;
+        }
+
         .report-form {
             display: grid;
-            gap: 18px;
-            padding: 22px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
             gap: 8px;
+            min-width: 0;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
         }
 
         .form-group label {
-            font-size: 13px;
             font-weight: 600;
-            color: #344054;
         }
 
         .form-group input,
@@ -35,374 +50,1011 @@
         .form-group textarea {
             width: 100%;
             box-sizing: border-box;
-            padding: 12px;
+            padding: 11px 12px;
             border: 1px solid #d0d5dd;
-            border-radius: 9px;
+            border-radius: 8px;
             font: inherit;
             background: #fff;
             color: #101828;
         }
 
         .form-group textarea {
-            min-height: 105px;
+            min-height: 110px;
             resize: vertical;
         }
 
-        .form-row {
+        .location-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            gap: 12px;
         }
 
-        .submit-report {
+        .form-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            grid-column: 1 / -1;
+            margin-top: 8px;
+        }
+
+        .submit-report,
+        .secondary-button {
+            padding: 12px 18px;
             border: none;
-            border-radius: 9px;
-            padding: 13px 18px;
-            background: #d94841;
-            color: white;
-            font-size: 14px;
-            font-weight: 700;
+            border-radius: 8px;
+            font: inherit;
+            font-weight: 600;
             cursor: pointer;
         }
 
-        .submit-report:hover {
-            background: #b8322b;
+        .submit-report {
+            background: #1570ef;
+            color: #fff;
         }
 
-        .info-panel {
-            padding: 22px;
+        .secondary-button {
+            background: #eaf2ff;
+            color: #175cd3;
         }
 
-        .info-panel p,
-        .info-panel li {
-            color: #667085;
-            font-size: 14px;
-            line-height: 1.7;
-        }
-
-        .info-panel ul {
-            padding-left: 20px;
+        .submit-report:disabled,
+        .secondary-button:disabled {
+            opacity: 0.65;
+            cursor: wait;
         }
 
         .notice {
-            padding: 13px;
-            border-radius: 9px;
-            background: #fff4e5;
-            color: #8a4b08;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-
-        #form-message {
+            padding: 12px;
+            border-radius: 8px;
+            background: #fffaeb;
+            color: #93370d;
             font-size: 14px;
             line-height: 1.5;
         }
 
-        @media (max-width: 900px) {
-            .report-grid {
-                grid-template-columns: 1fr;
-            }
+        .message {
+            grid-column: 1 / -1;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            line-height: 1.6;
         }
 
-        @media (max-width: 550px) {
-            .form-row {
-                grid-template-columns: 1fr;
+        .back-link {
+            display: inline-block;
+            margin-bottom: 18px;
+            color: #1570ef;
+            text-decoration: none;
+        }
+
+        /* AI assessment result card */
+
+        .ai-card {
+            grid-column: 1 / -1;
+            border: 1px solid #e4e7ec;
+            border-radius: 14px;
+            padding: 22px;
+            margin-top: 8px;
+            background: #fff;
+            color: #101828;
+            box-shadow: 0 4px 14px rgba(16, 24, 40, 0.06);
+        }
+
+        .ai-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .ai-card-header h2 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .damage-badge {
+            padding: 8px 13px;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .damage-destroyed {
+            background: #b42318;
+        }
+
+        .damage-major {
+            background: #c4320a;
+        }
+
+        .damage-minor {
+            background: #067647;
+        }
+
+        .damage-unknown {
+            background: #475467;
+        }
+
+        .confidence-panel {
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .confidence-value {
+            font-size: 30px;
+            font-weight: 750;
+            margin: 8px 0;
+        }
+
+        .score-row {
+            margin: 15px 0;
+        }
+
+        .score-label {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 7px;
+            font-size: 14px;
+        }
+
+        .score-track {
+            height: 9px;
+            background: #eaecf0;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            border-radius: 20px;
+        }
+
+        .ai-section-title {
+            margin-top: 22px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .verification-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .verification-item {
+            border: 1px solid #eaecf0;
+            border-radius: 9px;
+            padding: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .verification-value {
+            display: block;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+
+        .verification-ok {
+            color: #067647;
+        }
+
+        .verification-warning {
+            color: #b54708;
+        }
+
+        .warning-list {
+            padding: 12px 12px 12px 32px;
+            border-radius: 9px;
+            background: #fffaeb;
+            color: #93370d;
+            line-height: 1.7;
+            overflow-wrap: anywhere;
+        }
+
+        .compensation-panel {
+            padding: 16px;
+            margin-top: 18px;
+            border-radius: 10px;
+            background: #f0f9ff;
+            border: 1px solid #b9e6fe;
+        }
+
+        .compensation-value {
+            font-size: 24px;
+            font-weight: 750;
+            margin-top: 6px;
+        }
+
+        .ai-disclaimer {
+            padding: 13px;
+            margin-top: 18px;
+            border-radius: 9px;
+            background: #fff4ed;
+            color: #9a3412;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .small-muted {
+            color: #667085;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 650px) {
+            .report-page {
+                margin: 12px auto;
+                padding: 16px;
             }
 
             .report-form,
-            .info-panel {
+            .location-row {
+                grid-template-columns: 1fr;
+            }
+
+            .verification-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ai-card {
                 padding: 16px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .form-actions button {
+                width: 100%;
             }
         }
     </style>
 </head>
 
 <body>
-<div class="app-shell">
+    <main class="report-page">
 
-    <aside class="sidebar">
-        <div class="brand">
-            <div class="brand-mark">R</div>
-            <div>
-                <h2>ResQMap AI</h2>
-                <p>Disaster Response Platform</p>
-            </div>
-        </div>
+        <a class="back-link" href="/">← Back to Dashboard</a>
 
-        <div class="nav-label">WORKSPACE</div>
-
-        <a class="nav-link" href="/">
-            <span>▦</span> Overview
-        </a>
-
-        <a class="nav-link" href="/#map-section">
-            <span>⌖</span> Incident Map
-        </a>
-
-        <a class="nav-link" href="/#incident-section">
-            <span>▤</span> Inspection Queue
-        </a>
-
-        <a class="nav-link active" href="/report">
-            <span>＋</span> Report Incident
-        </a>
-
-        <div class="sidebar-note">
-            <strong>Response matters.</strong>
-            <p>Accurate incident information helps responders assess needs and prioritize assistance.</p>
-        </div>
-
-        <div class="sidebar-footer">
-            <span class="status-dot"></span>
-            ResQMap AI Demo
-        </div>
-    </aside>
-
-    <main class="main-content">
-
-        <header class="topbar">
-            <div>
-                <p class="eyebrow">INCIDENT MANAGEMENT</p>
-                <h1>Report an Incident</h1>
-                <p class="subheading">Submit disaster information for response assessment.</p>
-            </div>
-
-            <div class="topbar-right">
-                <div class="live-pill">
-                    <span class="status-dot"></span>
-                    Reporting Portal
-                </div>
-            </div>
+        <header class="report-header">
+            <h1>Report a Disaster Incident</h1>
+            <p>
+                Submit incident details and optionally analyze a damage
+                photograph using the AI assessment service.
+            </p>
         </header>
 
-        <section class="report-grid">
+        <form id="incident-form" class="report-form">
 
-            <div class="panel">
-                <div class="panel-header">
-                    <div>
-                        <h2>Incident Details</h2>
-                        <p>Provide as much accurate information as possible.</p>
-                    </div>
-                </div>
-
-                <form id="incident-form" class="report-form">
-
-                    <div class="form-group">
-                        <label for="disaster_type">Disaster Type *</label>
-                        <select id="disaster_type" name="disaster_type" required>
-                            <option value="">Select disaster type</option>
-                            <option value="Flood">Flood</option>
-                            <option value="Earthquake">Earthquake</option>
-                            <option value="Cyclone">Cyclone</option>
-                            <option value="Fire">Fire</option>
-                            <option value="Landslide">Landslide</option>
-                            <option value="Building Collapse">Building Collapse</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="location">Location / Area *</label>
-                            <input id="location" name="location"
-                                   placeholder="Village, town or landmark" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="people_affected">People Affected *</label>
-                            <input id="people_affected" name="people_affected"
-                                   type="number" min="0" value="1" required>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="latitude">Latitude (optional)</label>
-                            <input id="latitude" name="latitude" type="number"
-                                   step="any" placeholder="e.g. 16.5">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="longitude">Longitude (optional)</label>
-                            <input id="longitude" name="longitude" type="number"
-                                   step="any" placeholder="e.g. 82.0">
-                        </div>
-                        <div class="form-group">
-    <button type="button" id="get-location"
-            class="submit-report"
-            style="background:#1570ef;">
-        📍 Use My Current Location
-    </button>
-    <p id="location-message" role="status"
-       style="font-size:13px;color:#667085;">
-        Click to fill your GPS coordinates automatically.
-    </p>
-</div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="life_safety">Immediate Danger *</label>
-                        <select id="life_safety" name="life_safety" required>
-                            <option value="">Select current situation</option>
-                            <option value="yes">Yes — people trapped, injured, or in immediate danger</option>
-                            <option value="no">No immediate life-threatening danger reported</option>
-                            <option value="unknown">Unknown — situation not confirmed</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="assistance">Assistance Needed *</label>
-                        <select id="assistance" name="assistance" required>
-                            <option value="">Select assistance needed</option>
-                            <option value="Rescue">Rescue team</option>
-                            <option value="Medical">Medical assistance</option>
-                            <option value="Food and Water">Food and drinking water</option>
-                            <option value="Shelter">Temporary shelter</option>
-                            <option value="Evacuation">Evacuation</option>
-                            <option value="Multiple">Multiple types of assistance</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="description">Additional Details *</label>
-                        <textarea id="description" name="description"
-                                  placeholder="Describe visible damage, blocked roads, injuries, or other urgent needs."
-                                  required></textarea>
-                    </div>
-
-                    <div class="notice">
-                        This is a demonstration reporting portal. Do not rely on it for real emergencies.
-                        Contact local emergency services immediately if lives are at risk.
-                    </div>
-
-                    <button class="submit-report" type="submit">
-                        Submit Incident Report
-                    </button>
-
-                    <p id="form-message" role="status"></p>
-                </form>
+            <div class="form-group">
+                <label for="disaster-type">Disaster Type *</label>
+                <select id="disaster-type" name="disaster_type" required>
+                    <option value="">Select disaster type</option>
+                    <option value="Flood">Flood</option>
+                    <option value="Earthquake">Earthquake</option>
+                    <option value="Cyclone">Cyclone</option>
+                    <option value="Landslide">Landslide</option>
+                    <option value="Fire">Fire</option>
+                    <option value="Building Collapse">Building Collapse</option>
+                    <option value="Other">Other</option>
+                </select>
             </div>
 
-            <div>
-                <div class="panel info-panel">
-                    <div class="panel-header">
-                        <div>
-                            <h2>Reporting Guidelines</h2>
-                            <p>Help the system assess the incident.</p>
-                        </div>
-                    </div>
-
-                    <ul>
-                        <li>Enter the correct location or a nearby landmark.</li>
-                        <li>Report people trapped or injured honestly.</li>
-                        <li>Estimate the number of people affected if known.</li>
-                        <li>Describe damage and immediate needs clearly.</li>
-                        <li>Leave coordinates blank if you do not know them.</li>
-                    </ul>
-                </div>
-
-                <div class="panel info-panel" style="margin-top: 22px;">
-                    <div class="panel-header">
-                        <div>
-                            <h2>How Prioritization Works</h2>
-                            <p>Decision support, not a final emergency judgment.</p>
-                        </div>
-                    </div>
-
-                    <p><strong>Life safety:</strong> Reports of people trapped or in immediate danger require urgent attention.</p>
-                    <p><strong>Damage:</strong> The reported type and extent of damage contribute to assessment.</p>
-                    <p><strong>People affected:</strong> More affected people can increase the need for assistance.</p>
-                    <p><strong>Uncertainty:</strong> Unverified reports must be checked by responders.</p>
-                </div>
+            <div class="form-group">
+                <label for="location">Incident Location *</label>
+                <input
+                    id="location"
+                    name="location"
+                    type="text"
+                    placeholder="Area, village, city or landmark"
+                    required
+                >
             </div>
 
-        </section>
+            <div class="form-group">
+                <label for="people-affected">People Affected *</label>
+                <input
+                    id="people-affected"
+                    name="people_affected"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value="0"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="immediate-danger">Immediate Danger? *</label>
+                <select
+                    id="immediate-danger"
+                    name="immediate_danger"
+                    required
+                >
+                    <option value="false">No immediate danger reported</option>
+                    <option value="true">Yes — immediate danger</option>
+                </select>
+            </div>
+
+            <div class="form-group full-width">
+                <label>GPS Coordinates</label>
+
+                <div class="location-row">
+                    <div class="form-group">
+                        <label for="latitude">Latitude</label>
+                        <input
+                            id="latitude"
+                            name="latitude"
+                            type="number"
+                            min="-90"
+                            max="90"
+                            step="any"
+                            placeholder="e.g. 16.5062"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="longitude">Longitude</label>
+                        <input
+                            id="longitude"
+                            name="longitude"
+                            type="number"
+                            min="-180"
+                            max="180"
+                            step="any"
+                            placeholder="e.g. 80.6480"
+                        >
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    id="get-location"
+                    class="secondary-button"
+                >
+                    Use My GPS Location
+                </button>
+
+                <small class="small-muted">
+                    Allow location access when your browser prompts you.
+                    GPS coordinates are required for AI assessment.
+                </small>
+            </div>
+
+            <div class="form-group full-width">
+                <label for="assistance">Assistance Required *</label>
+                <select id="assistance" name="assistance" required>
+                    <option value="">Select required assistance</option>
+                    <option value="Medical">Medical assistance</option>
+                    <option value="Rescue">Rescue team</option>
+                    <option value="Food and Water">Food and water</option>
+                    <option value="Shelter">Temporary shelter</option>
+                    <option value="Evacuation">Evacuation</option>
+                    <option value="Multiple">Multiple requirements</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group full-width">
+                <label for="description">Incident Description *</label>
+                <textarea
+                    id="description"
+                    name="description"
+                    placeholder="Describe the damage, danger, blocked roads or urgent needs..."
+                    required
+                ></textarea>
+            </div>
+
+            <div class="form-group full-width">
+                <label for="damage-photo">
+                    Damage Photo (for AI assessment)
+                </label>
+                <input
+                    id="damage-photo"
+                    name="photo"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                >
+                <small class="small-muted">
+                    Upload a clear photograph of the affected building
+                    or property. A photo is required for AI analysis,
+                    but not for submitting the incident report.
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="property-type">Property Type</label>
+                <select id="property-type" name="property_type">
+                    <option value="building">Building</option>
+                    <option value="house">House</option>
+                    <option value="commercial">Commercial property</option>
+                    <option value="infrastructure">Infrastructure</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="disaster-cutoff">Disaster Date and Time</label>
+                <input
+                    id="disaster-cutoff"
+                    name="disaster_cutoff"
+                    type="datetime-local"
+                >
+                <small class="small-muted">
+                    Select the disaster date and time required by the
+                    assessment service.
+                </small>
+            </div>
+
+            <div class="form-group full-width notice">
+                AI damage estimates are preliminary. They must not replace
+                on-site inspection or professional emergency-response
+                decisions.
+            </div>
+
+            <div class="form-actions">
+                <button
+                    type="submit"
+                    id="submit-incident"
+                    class="submit-report"
+                >
+                    Submit Incident Report
+                </button>
+
+                <button
+                    type="button"
+                    id="assess-damage"
+                    class="submit-report"
+                >
+                    Analyze Damage with AI
+                </button>
+            </div>
+
+            <div
+                id="incident-message"
+                class="message"
+                role="status"
+                aria-live="polite"
+            ></div>
+
+            <div
+                id="ai-message"
+                class="message"
+                role="status"
+                aria-live="polite"
+            ></div>
+
+            <section id="ai-results" class="ai-card hidden"
+                     aria-live="polite">
+                <div class="ai-card-header">
+                    <h2>AI Damage Assessment</h2>
+                    <span id="damage-badge"
+                          class="damage-badge damage-unknown">
+                        UNKNOWN
+                    </span>
+                </div>
+
+                <div class="confidence-panel">
+                    <div class="small-muted">Model confidence</div>
+                    <div id="confidence-value" class="confidence-value">
+                        —
+                    </div>
+                    <div class="score-track">
+                        <div id="confidence-bar"
+                             class="score-fill"
+                             style="width:0%;background:#1570ef;">
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="ai-section-title">Assessment description</h3>
+                <p id="ai-description"></p>
+
+                <h3 class="ai-section-title">Damage category scores</h3>
+                <div id="damage-scores"></div>
+
+                <h3 class="ai-section-title">Verification checks</h3>
+                <div class="verification-grid">
+                    <div class="verification-item">
+                        Photo GPS verification
+                        <span id="gps-verification"
+                              class="verification-value">Unknown</span>
+                    </div>
+
+                    <div class="verification-item">
+                        Capture timestamp
+                        <span id="timestamp-verification"
+                              class="verification-value">Unknown</span>
+                    </div>
+
+                    <div class="verification-item">
+                        Duplicate image check
+                        <span id="duplicate-verification"
+                              class="verification-value">Unknown</span>
+                    </div>
+                </div>
+
+                <h3 class="ai-section-title">Verification warnings</h3>
+                <ul id="fraud-flags" class="warning-list"></ul>
+
+                <div class="compensation-panel">
+                    <div class="small-muted">
+                        Returned compensation estimate
+                    </div>
+                    <div id="compensation-value"
+                         class="compensation-value">
+                        Not provided
+                    </div>
+                    <p class="small-muted">
+                        Currency, eligibility and calculation method must
+                        be confirmed with the service provider. This is
+                        not an official compensation decision.
+                    </p>
+                </div>
+
+                <p class="small-muted">
+                    <strong>Property type:</strong>
+                    <span id="assessed-property">Not specified</span>
+                </p>
+
+                <p class="small-muted">
+                    <strong>Image fingerprint:</strong>
+                    <span id="image-hash">Not provided</span>
+                </p>
+
+                <div class="ai-disclaimer">
+                    <strong>Important safety notice:</strong>
+                    This is an automated image-based estimate, not a
+                    structural inspection. Do not use it alone to decide
+                    whether a building is safe to occupy or to authorize
+                    rescue, evacuation or compensation decisions.
+                </div>
+            </section>
+
+        </form>
     </main>
-</div>
 
-<script>
-    document.getElementById("get-location").addEventListener("click", function () {
-    const locationMessage = document.getElementById("location-message");
-    const button = this;
+    <script>
+        const incidentForm = document.getElementById("incident-form");
+        const incidentMessage = document.getElementById("incident-message");
+        const aiMessage = document.getElementById("ai-message");
+        const aiResults = document.getElementById("ai-results");
 
-    if (!navigator.geolocation) {
-        locationMessage.textContent =
-            "GPS is not supported by this browser. Enter coordinates manually.";
-        return;
-    }
+        // Safely display text returned by the API.
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, function (character) {
+                return {
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#39;"
+                }[character];
+            });
+        }
 
-    locationMessage.textContent = "Getting your location...";
-    button.disabled = true;
+        function setVerification(elementId, value) {
+            const element = document.getElementById(elementId);
 
-    navigator.geolocation.getCurrentPosition(
-        function (position) {
-            document.getElementById("latitude").value =
-                position.coords.latitude.toFixed(6);
+            if (value === true) {
+                element.textContent = "Verified";
+                element.className = "verification-value verification-ok";
+            } else if (value === false) {
+                element.textContent = "Not verified";
+                element.className =
+                    "verification-value verification-warning";
+            } else {
+                element.textContent = "Unknown";
+                element.className = "verification-value";
+            }
+        }
 
-            document.getElementById("longitude").value =
-                position.coords.longitude.toFixed(6);
+        function formatPercentage(value) {
+            const number = Number(value);
 
-            locationMessage.textContent =
-                "Location captured successfully!";
-            button.disabled = false;
-        },
-        function (error) {
-            const messages = {
-                1: "Location permission denied. Allow location access or enter coordinates manually.",
-                2: "Location unavailable. Try again or enter coordinates manually.",
-                3: "Location request timed out. Please try again."
+            if (!Number.isFinite(number)) {
+                return "Not available";
+            }
+
+            return (Math.max(0, Math.min(1, number)) * 100).toFixed(2) + "%";
+        }
+
+        // Get the user's current GPS coordinates.
+        document.getElementById("get-location").addEventListener(
+            "click",
+            function () {
+                if (!navigator.geolocation) {
+                    incidentMessage.textContent =
+                        "Geolocation is not supported by this browser.";
+                    return;
+                }
+
+                incidentMessage.textContent = "Getting your GPS location...";
+
+                navigator.geolocation.getCurrentPosition(
+                    function (position) {
+                        document.getElementById("latitude").value =
+                            position.coords.latitude.toFixed(6);
+
+                        document.getElementById("longitude").value =
+                            position.coords.longitude.toFixed(6);
+
+                        incidentMessage.textContent =
+                            "GPS coordinates captured successfully.";
+                    },
+                    function (error) {
+                        incidentMessage.textContent =
+                            "Unable to get GPS location: " + error.message +
+                            ". Enter the coordinates manually if needed.";
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 15000,
+                        maximumAge: 0
+                    }
+                );
+            }
+        );
+
+        // Submit an incident to the existing Flask incident API.
+        incidentForm.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const submitButton =
+                document.getElementById("submit-incident");
+
+            const latitudeValue =
+                document.getElementById("latitude").value.trim();
+
+            const longitudeValue =
+                document.getElementById("longitude").value.trim();
+
+            const peopleAffected = Number(
+                document.getElementById("people-affected").value
+            );
+
+            if (!Number.isInteger(peopleAffected) || peopleAffected < 0) {
+                incidentMessage.textContent =
+                    "Enter a valid number of people affected.";
+                return;
+            }
+
+            if ((latitudeValue && !longitudeValue) ||
+                (longitudeValue && !latitudeValue)) {
+                incidentMessage.textContent =
+                    "Enter both GPS coordinates, or leave both empty.";
+                return;
+            }
+
+            const incident = {
+                disaster_type:
+                    document.getElementById("disaster-type").value,
+
+                location:
+                    document.getElementById("location").value.trim(),
+
+                people_affected: peopleAffected,
+
+                latitude: latitudeValue ? Number(latitudeValue) : null,
+
+                longitude: longitudeValue ? Number(longitudeValue) : null,
+
+                immediate_danger:
+                    document.getElementById("immediate-danger").value === "true",
+
+                assistance:
+                    document.getElementById("assistance").value,
+
+                description:
+                    document.getElementById("description").value.trim()
             };
 
-            locationMessage.textContent =
-                messages[error.code] || "Could not get your location.";
-            button.disabled = false;
-        },
-        {
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 0
-        }
-    );
-});
-document.getElementById("incident-form").addEventListener("submit", async function(event) {
-    event.preventDefault();
+            submitButton.disabled = true;
+            incidentMessage.textContent = "Submitting incident report...";
 
-    const message = document.getElementById("form-message");
-    const form = event.target;
-    const data = Object.fromEntries(new FormData(form).entries());
+            try {
+                const response = await fetch("/api/incidents", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(incident)
+                });
 
-    data.people_affected = Number(data.people_affected);
-    data.latitude = data.latitude === "" ? null : Number(data.latitude);
-    data.longitude = data.longitude === "" ? null : Number(data.longitude);
-    data.life_safety = data.life_safety;
+                const result = await response.json();
 
-    message.textContent = "Submitting report...";
+                if (!response.ok) {
+                    throw new Error(
+                        result.error || result.message ||
+                        JSON.stringify(result)
+                    );
+                }
 
-    try {
-        const response = await fetch("/api/incidents", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
+                incidentMessage.textContent =
+                    "Incident submitted successfully.\n" +
+                    JSON.stringify(result, null, 2);
+
+            } catch (error) {
+                incidentMessage.textContent =
+                    "Incident submission failed: " + error.message;
+            } finally {
+                submitButton.disabled = false;
+            }
         });
 
-        const result = await response.json();
+        // Render a structured assessment card.
+        function displayAssessment(assessment) {
+            const grade = String(
+                assessment.damage_grade || "UNKNOWN"
+            ).toUpperCase();
 
-        if (!response.ok) {
-            throw new Error(result.error || "Could not submit the report.");
+            const badge = document.getElementById("damage-badge");
+
+            badge.textContent = grade;
+            badge.className = "damage-badge";
+
+            if (grade === "DESTROYED") {
+                badge.classList.add("damage-destroyed");
+            } else if (grade === "MAJOR") {
+                badge.classList.add("damage-major");
+            } else if (grade === "MINOR") {
+                badge.classList.add("damage-minor");
+            } else {
+                badge.classList.add("damage-unknown");
+            }
+
+            const confidence = Number(assessment.confidence_score);
+            const validConfidence =
+                Number.isFinite(confidence)
+                    ? Math.max(0, Math.min(1, confidence))
+                    : null;
+
+            document.getElementById("confidence-value").textContent =
+                validConfidence === null
+                    ? "Not available"
+                    : (validConfidence * 100).toFixed(2) + "%";
+
+            document.getElementById("confidence-bar").style.width =
+                validConfidence === null
+                    ? "0%"
+                    : (validConfidence * 100) + "%";
+
+            document.getElementById("ai-description").textContent =
+                assessment.ai_description ||
+                "No assessment description was returned.";
+
+            const scoresContainer =
+                document.getElementById("damage-scores");
+
+            scoresContainer.replaceChildren();
+
+            const scores = assessment.all_scores || {};
+
+            const scoreColors = {
+                DESTROYED: "#dc2626",
+                MAJOR: "#ea580c",
+                MINOR: "#16a34a"
+            };
+
+            const scoreEntries = Object.entries(scores);
+
+            if (scoreEntries.length === 0) {
+                scoresContainer.textContent =
+                    "No damage category scores were returned.";
+            } else {
+                scoreEntries.forEach(function ([name, rawScore]) {
+                    const score = Number(rawScore);
+
+                    const fraction = Number.isFinite(score)
+                        ? Math.max(0, Math.min(1, score))
+                        : 0;
+
+                    const row = document.createElement("div");
+                    row.className = "score-row";
+
+                    const label = document.createElement("div");
+                    label.className = "score-label";
+
+                    const nameElement = document.createElement("strong");
+                    nameElement.textContent = name;
+
+                    const valueElement = document.createElement("span");
+                    valueElement.textContent =
+                        Number.isFinite(score)
+                            ? (fraction * 100).toFixed(2) + "%"
+                            : "Not available";
+
+                    label.append(nameElement, valueElement);
+
+                    const track = document.createElement("div");
+                    track.className = "score-track";
+
+                    const fill = document.createElement("div");
+                    fill.className = "score-fill";
+                    fill.style.width = (fraction * 100) + "%";
+                    fill.style.background =
+                        scoreColors[name] || "#1570ef";
+
+                    track.appendChild(fill);
+                    row.append(label, track);
+                    scoresContainer.appendChild(row);
+                });
+            }
+
+            setVerification("gps-verification", assessment.gps_verified);
+            setVerification(
+                "timestamp-verification",
+                assessment.timestamp_verified
+            );
+
+            let duplicateText = "Unknown";
+
+            if (assessment.is_duplicate === true) {
+                duplicateText = "Possible duplicate detected";
+            } else if (assessment.is_duplicate === false) {
+                duplicateText = "No duplicate detected";
+            }
+
+            document.getElementById("duplicate-verification").textContent =
+                duplicateText;
+
+            document.getElementById("duplicate-verification").className =
+                "verification-value " +
+                (assessment.is_duplicate === true
+                    ? "verification-warning"
+                    : assessment.is_duplicate === false
+                        ? "verification-ok"
+                        : "");
+
+            const flagsList = document.getElementById("fraud-flags");
+            flagsList.replaceChildren();
+
+            if (Array.isArray(assessment.fraud_flags) &&
+                assessment.fraud_flags.length > 0) {
+                assessment.fraud_flags.forEach(function (flag) {
+                    const item = document.createElement("li");
+                    item.textContent = String(flag);
+                    flagsList.appendChild(item);
+                });
+            } else {
+                const item = document.createElement("li");
+                item.textContent =
+                    "No verification warnings returned by the service.";
+                flagsList.appendChild(item);
+            }
+
+            const compensation = assessment.compensation_amount;
+
+            document.getElementById("compensation-value").textContent =
+                compensation !== null && compensation !== undefined
+                    ? String(compensation)
+                    : "Not provided";
+
+            document.getElementById("assessed-property").textContent =
+                assessment.property_type || "Not specified";
+
+            document.getElementById("image-hash").textContent =
+                assessment.phash || "Not provided";
+
+            aiResults.classList.remove("hidden");
+            aiMessage.textContent = "";
         }
 
-        message.textContent =
-            `Report submitted. ID: ${result.id || "created"} | Priority: ${result.priority || "Pending assessment"}`;
+        // Send the photo to the Flask AI assessment endpoint.
+        document.getElementById("assess-damage").addEventListener(
+            "click",
+            async function () {
+                const button = this;
 
-        form.reset();
-    } catch (error) {
-        message.textContent =
-            error.message === "Failed to fetch"
-            ? "The reporting API is not connected yet. We need to add the backend submission route next."
-            : error.message;
-    }
-});
-</script>
+                const photo =
+                    document.getElementById("damage-photo").files[0];
+
+                const latitude =
+                    document.getElementById("latitude").value.trim();
+
+                const longitude =
+                    document.getElementById("longitude").value.trim();
+
+                const disasterCutoff =
+                    document.getElementById("disaster-cutoff").value;
+
+                const propertyType =
+                    document.getElementById("property-type").value;
+
+                if (!photo) {
+                    aiMessage.textContent =
+                        "Please select a damage photo first.";
+                    return;
+                }
+
+                if (![
+                    "image/jpeg",
+                    "image/png",
+                    "image/webp"
+                ].includes(photo.type)) {
+                    aiMessage.textContent =
+                        "Please upload a JPG, PNG or WebP image.";
+                    return;
+                }
+
+                if (!latitude || !longitude) {
+                    aiMessage.textContent =
+                        "Enter both GPS coordinates or use the GPS button.";
+                    return;
+                }
+
+                const lat = Number(latitude);
+                const lng = Number(longitude);
+
+                if (!Number.isFinite(lat) || lat < -90 || lat > 90 ||
+                    !Number.isFinite(lng) || lng < -180 || lng > 180) {
+                    aiMessage.textContent =
+                        "Please enter valid GPS coordinates.";
+                    return;
+                }
+
+                if (!disasterCutoff) {
+                    aiMessage.textContent =
+                        "Select the disaster date and time.";
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append("photo", photo);
+                formData.append("claimed_lat", String(lat));
+                formData.append("claimed_lng", String(lng));
+                formData.append("disaster_cutoff", disasterCutoff);
+                formData.append("property_type", propertyType);
+
+                button.disabled = true;
+                aiResults.classList.add("hidden");
+                aiMessage.textContent =
+                    "Uploading photo and analyzing damage. Please wait...";
+
+                try {
+                    const response = await fetch("/api/assess-damage", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(
+                            result.error ||
+                            result.message ||
+                            JSON.stringify(result)
+                        );
+                    }
+
+                    const assessment = result.assessment || result;
+
+                    if (!assessment || !assessment.damage_grade) {
+                        throw new Error(
+                            "The service response did not contain a damage grade."
+                        );
+                    }
+
+                    displayAssessment(assessment);
+
+                } catch (error) {
+                    aiMessage.textContent =
+                        "AI assessment failed: " + error.message;
+                } finally {
+                    button.disabled = false;
+                }
+            }
+        );
+    </script>
 </body>
 </html>
